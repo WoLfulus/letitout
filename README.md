@@ -21,7 +21,7 @@ required to have an exit server up and running in order to expose it to the inte
 
 You can use any system you want to run exit servers if they are publicly accessible.
 
-But if you want a quick and easy setup, here it is how you can do it on a fresh Ubuntu machine (adjust as needed):
+The easiest way to do it is using [`inletsctl`](https://github.com/inlets/inletsctl) to create an exit server, but if you want a quick and easy setup on a provider not supported by `inletsctl`, here it is how you can do it on a fresh Ubuntu machine (adjust as needed):
 
 - Install inlets
   - `sudo curl -sLS https://get.inlets.dev | sudo sh`
@@ -95,7 +95,70 @@ If the `exit server` IP  is an IPv6 address, the record is created as an `AAAA` 
 
 If you want to quickly change the hostname, the target server, or the upstream service without editing the configuration file, you can specify it using `--hostname <host>`, `--server <server>` or `--upstream <upstream>`.
 
-For example if you want to run apache on `dev.anotherdomain.com` instead, you can run `letitout apache --hostname dev.anotherdomain.com` and it will start `inlets` and configure that DNS to point to the correct `exit server` ip.
+# Examples
+
+These examples assumes a configuration like this:
+
+Server:
+
+- `server1` at address `111.111.111.111`
+- `server2` at address `222.222.222.222`
+
+Domains:
+
+- `domain1.com`
+- `ddomain2.com`
+
+Projects:
+
+- `project1` on upstream `http://localhost:8000` with domain `project.domain1.com`
+- `project2` on upstream `http://localhost:3000` with domain `project.domain2.com`
+
+## Expose `project1`
+
+### Command
+
+`letitout project1`
+
+### Result
+
+- Creates an `A` DNS record `project.domain1.com` pointing to `111.111.111.111`
+- Tunnels `http://localhost:8000` to `server1`, accessible through `https://project.domain1.com`
+
+## Expose `project2`
+
+### Command
+
+`letitout project2`
+
+### Result
+
+- Creates an `A` DNS record `project.domain2.com` pointing to `222.222.222.222`
+- Tunnels `http://localhost:3000` to `server2`, accessible through `https://project.domain1.com`
+
+## Expose `project1` on `hey.domain2.com`
+
+### Command
+
+`letitout project1 --hostname hey.domain2.com`
+
+### Result
+
+- Creates an `A` DNS record `hey.domain2.com` pointing to `111.111.111.111`
+- Tunnels `http://localhost:3000` to `server1`, accessible through `https://hey.domain2.com`
+
+# Backlog
+
+### Complete
+
+- [x] Backup DNS record into a TXT record
+- [x] Create DNS record pointing to Exit server address
+- [x] Support multiple servers, projects and domains
+
+### Pending
+
+- [ ] Rollback DNS changed based on TXT backups on exit or command
+- [ ] Support more DNS providers
 
 # License
 
